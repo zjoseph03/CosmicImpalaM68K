@@ -36,7 +36,6 @@ module AddressDecoder_Verilog (
 			IOSelect_H <= 1 ;											// DO NOT CHANGE - debugger expects IO at this address
 		
 		
-		
 		if (Address[31:26] == 6'b0000_10)	// 0x0800_0000 to 0x0BFF_FFFF
 			DramSelect_H <= 1;					
 			

@@ -275,29 +275,15 @@ AddressDecoder_Verilog	b2v_inst20(
 // 0000_0001_0000_0000_00 (18 bits wide) is the address for the pixel buffer
 // xxxx_xxxx_xxx (13 bits wide is the address in the pixel buffer)
 // x (1 bit is the 0th address bit of the 68k)
-assign pixbuf_select_h = (Address[31:14] == 18'b0000_0001_0000_0000_00);
 
-// Connect the onchip_memory_m68k_connection signals for the pixel buffer
-always @(*) begin
-    if (pixbuf_select_h && !AS_L && !LDS_L) begin
-        // Address mapping (13-bit address for 8192 bytes)
-        onchip_memory_m68k_connection_address = Address[13:1];
-        onchip_memory_m68k_connection_chipselect = 1'b1;
-        onchip_memory_m68k_connection_clken = 1'b1;
-        onchip_memory_m68k_connection_write = ~RW;  // RW is 0 for write
-        
-        // For byte-wide interface
-        onchip_memory_m68k_connection_writedata = 
-            LDS_L ? 8'd0 : DataBusOut_Composite[7:0];  // Lower byte
-    end else begin
-        // Default values when not selected
-        onchip_memory_m68k_connection_address = 13'd0;
-        onchip_memory_m68k_connection_chipselect = 1'b0;
-        onchip_memory_m68k_connection_clken = 1'b0;
-        onchip_memory_m68k_connection_write = 1'b0;
-        onchip_memory_m68k_connection_writedata = 8'd0;
-    end
-end
+assign onchip_memory_m68k_connection_address = Address[12:0];
+assign onchip_memory_m68k_connection_chipselect = Address[31:13] == 19'b0000_0001_0000_0000_000 & ~AS_L; // Chip select for the 68k memory
+assign onchip_memory_m68k_connection_clken = onchip_memory_m68k_connection_chipselect ? 1'b1 : 1'b0; // Chip enable
+assign onchip_memory_m68k_connection_write = ~RW; // Write enable
+assign onchip_memory_m68k_connection_writedata = (~RW & onchip_memory_m68k_connection_chipselect) ? DataBusOut_Composite[7:0] : 8'd0; // Lower byte
+assign DataBusIn_Composite[7:0] = (RW && onchip_memory_m68k_connection_chipselect && ~LDS_L) ? onchip_memory_m68k_connection_readdata : 8'bzzzz_zzzz;
+assign DataBusIn_Composite[15:8] = (RW && onchip_memory_m68k_connection_chipselect && ~UDS_L) ? onchip_memory_m68k_connection_readdata : 8'bzzzz_zzzz;
+
 
 Dtack_Generator_Verilog	b2v_inst21(
 	.AS_L(AS_L),
@@ -309,16 +295,9 @@ Dtack_Generator_Verilog	b2v_inst21(
 
 
 wire [15:0] tr_data;
-wire [15:0] tr_data_with_pixbuf;
-
-// Define when a read from the pixel buffer is occurring
-assign pixbuf_read = pixbuf_select_h && !AS_L && RW && !LDS_L;
-
-assign tr_data_with_pixbuf[15:8] = tr_data[15:8];  // Upper byte unchanged
-assign tr_data_with_pixbuf[7:0] = pixbuf_read ? onchip_memory_m68k_connection_readdata : tr_data[7:0];
 
 assign tr_data = Trdata_OE ? DataBusOut_Composite : 16'bzzzz_zzzz_zzzz_zzzz;	
-assign DataBusIn_Composite = DataBusIn_OE ? tr_data_with_pixbuf : 16'bzzzz_zzzz_zzzz_zzzz;	
+assign DataBusIn_Composite = DataBusIn_OE ? tr_data : 16'bzzzz_zzzz_zzzz_zzzz;	
 
 InterruptPriorityEncoder	b2v_inst28(
 	.IRQ7_L(1),
@@ -342,9 +321,7 @@ TraceExceptionGenerator	b2v_inst30(
 	.TraceIRQ_L(TraceIRQ_L));
 
 assign	Trdata_OE = RW & OffBoardMemory_H;
-
 assign	DataBusIn_OE = ~(RW | AS_L);
-// assign DataBusIn_OE = RW & !AS_L;  // Active during reads when address strobe is active
 
 OnChipRam256kbyte	b2v_inst6(
 	.RamSelect_H(RamSelect_H),
