@@ -285,6 +285,7 @@ assign DataBusIn_Composite[7:0] = (RW && onchip_memory_m68k_connection_chipselec
 assign DataBusIn_Composite[15:8] = (RW && onchip_memory_m68k_connection_chipselect && ~UDS_L) ? onchip_memory_m68k_connection_readdata : 8'bzzzz_zzzz;
 
 
+
 Dtack_Generator_Verilog	b2v_inst21(
 	.AS_L(AS_L),
 	.DramSelect_H(DramRamSelect_H),
@@ -434,29 +435,54 @@ vga_system_inst (
 );
 
 
+// THIS IS THEIR IMPLEMENTATION OF THE ENCYRPTED BUFFER SYSTEM
+// buffer_system  
+// buffer_system_inst (
+//         .clk_clk                                                        (Clock25Mhz),                                                        //                                              clk.clk
+//         .reset_reset_n                                                  (Reset_L),                                                  //                                            reset.reset_n
+//         .onchip_memory_pixel_buffer_connection_address      (onchip_memory_pixel_buffer_connection_address     )                  ,              //            onchip_memory_pixel_buffer_connection.address
+//         .onchip_memory_pixel_buffer_connection_clken        (onchip_memory_pixel_buffer_connection_clken       )                  ,              //                                                 .clken
+//         .onchip_memory_pixel_buffer_connection_chipselect   (onchip_memory_pixel_buffer_connection_chipselect  )                  ,              //                                                 .chipselect
+//         .onchip_memory_pixel_buffer_connection_write        (onchip_memory_pixel_buffer_connection_write       )                  ,              //                                                 .write
+//         .onchip_memory_pixel_buffer_connection_readdata     (onchip_memory_pixel_buffer_connection_readdata    )                  ,              //                                                 .readdata
+//         .onchip_memory_pixel_buffer_connection_writedata    (onchip_memory_pixel_buffer_connection_writedata   )                  ,              //                                                 .writedata
+//         .onchip_memory_m68k_connection_address              (onchip_memory_m68k_connection_address             )                  ,              //                    onchip_memory_m68k_connection.address
+//         .onchip_memory_m68k_connection_chipselect           (onchip_memory_m68k_connection_chipselect          )                  ,              //                                                 .chipselect
+//         .onchip_memory_m68k_connection_clken                (onchip_memory_m68k_connection_clken               )                  ,              //                                                 .clken
+//         .onchip_memory_m68k_connection_write                (onchip_memory_m68k_connection_write               )                  ,              //                                                 .write
+//         .onchip_memory_m68k_connection_readdata             (onchip_memory_m68k_connection_readdata            )                  ,              //                                                 .readdata
+//         .onchip_memory_m68k_connection_writedata            (onchip_memory_m68k_connection_writedata           )                  ,              //                                                 .writedata
+//         .shadow_buffer_address                              (shadow_buffer_address                             )                  ,                                       //                                    shadow_buffer.address
+//         .shadow_buffer_clken                                (shadow_buffer_clken                               )                  ,                                       //                                                 .clken
+//         .shadow_buffer_chipselect                           (shadow_buffer_chipselect                          )                  ,                                       //                                                 .chipselect
+//         .shadow_buffer_write                                (shadow_buffer_write                               )                  ,                                       //                                                 .write
+//         .shadow_buffer_readdata                             (shadow_buffer_readdata                            )                  ,                                       //                                                 .readdata
+//         .shadow_buffer_writedata                            (shadow_buffer_writedata                           )                                                         //                                                 .writedata      
+//     );
+
 buffer_system  
 buffer_system_inst (
-        .clk_clk                                                        (Clock25Mhz),                                                        //                                              clk.clk
-        .reset_reset_n                                                  (Reset_L),                                                  //                                            reset.reset_n
-        .onchip_memory_pixel_buffer_connection_address      (onchip_memory_pixel_buffer_connection_address     )                  ,              //            onchip_memory_pixel_buffer_connection.address
-        .onchip_memory_pixel_buffer_connection_clken        (onchip_memory_pixel_buffer_connection_clken       )                  ,              //                                                 .clken
-        .onchip_memory_pixel_buffer_connection_chipselect   (onchip_memory_pixel_buffer_connection_chipselect  )                  ,              //                                                 .chipselect
-        .onchip_memory_pixel_buffer_connection_write        (onchip_memory_pixel_buffer_connection_write       )                  ,              //                                                 .write
-        .onchip_memory_pixel_buffer_connection_readdata     (onchip_memory_pixel_buffer_connection_readdata    )                  ,              //                                                 .readdata
-        .onchip_memory_pixel_buffer_connection_writedata    (onchip_memory_pixel_buffer_connection_writedata   )                  ,              //                                                 .writedata
-        .onchip_memory_m68k_connection_address              (onchip_memory_m68k_connection_address             )                  ,              //                    onchip_memory_m68k_connection.address
-        .onchip_memory_m68k_connection_chipselect           (onchip_memory_m68k_connection_chipselect          )                  ,              //                                                 .chipselect
-        .onchip_memory_m68k_connection_clken                (onchip_memory_m68k_connection_clken               )                  ,              //                                                 .clken
-        .onchip_memory_m68k_connection_write                (onchip_memory_m68k_connection_write               )                  ,              //                                                 .write
-        .onchip_memory_m68k_connection_readdata             (onchip_memory_m68k_connection_readdata            )                  ,              //                                                 .readdata
-        .onchip_memory_m68k_connection_writedata            (onchip_memory_m68k_connection_writedata           )                  ,              //                                                 .writedata
-        .shadow_buffer_address                              (shadow_buffer_address                             )                  ,                                       //                                    shadow_buffer.address
-        .shadow_buffer_clken                                (shadow_buffer_clken                               )                  ,                                       //                                                 .clken
-        .shadow_buffer_chipselect                           (shadow_buffer_chipselect                          )                  ,                                       //                                                 .chipselect
-        .shadow_buffer_write                                (shadow_buffer_write                               )                  ,                                       //                                                 .write
-        .shadow_buffer_readdata                             (shadow_buffer_readdata                            )                  ,                                       //                                                 .readdata
-        .shadow_buffer_writedata                            (shadow_buffer_writedata                           )                                                         //                                                 .writedata      
-    );
+        .clk_clk                                           (Clock25Mhz),
+        .reset_reset_n                                     (Reset_L),
+        .onchip_memory_pixel_buffer_connection_address     (onchip_memory_pixel_buffer_connection_address),
+        .onchip_memory_pixel_buffer_connection_clken       (onchip_memory_pixel_buffer_connection_clken),
+        .onchip_memory_pixel_buffer_connection_chipselect  (onchip_memory_pixel_buffer_connection_chipselect),
+        .onchip_memory_pixel_buffer_connection_write       (onchip_memory_pixel_buffer_connection_write),
+        .onchip_memory_pixel_buffer_connection_readdata    (onchip_memory_pixel_buffer_connection_readdata),
+        .onchip_memory_pixel_buffer_connection_writedata   (onchip_memory_pixel_buffer_connection_writedata),
+        .onchip_memory_m68k_connection_address             (onchip_memory_m68k_connection_address),
+        .onchip_memory_m68k_connection_chipselect          (onchip_memory_m68k_connection_chipselect),
+        .onchip_memory_m68k_connection_clken               (onchip_memory_m68k_connection_clken),
+        .onchip_memory_m68k_connection_write               (onchip_memory_m68k_connection_write),
+        .onchip_memory_m68k_connection_readdata            (onchip_memory_m68k_connection_readdata),
+        .onchip_memory_m68k_connection_writedata           (onchip_memory_m68k_connection_writedata),
+        .shadow_buffer_address                             (shadow_buffer_address),
+        .shadow_buffer_clken                               (shadow_buffer_clken),
+        .shadow_buffer_chipselect                          (shadow_buffer_chipselect),
+        .shadow_buffer_write                               (shadow_buffer_write),
+        .shadow_buffer_readdata                            (shadow_buffer_readdata),
+        .shadow_buffer_writedata                           (shadow_buffer_writedata)
+);
 
 midway8080_memory_adapter
 midway8080_memory_adapter_inst
