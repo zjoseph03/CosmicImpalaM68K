@@ -100,6 +100,23 @@ int _getch( void )
     return c ;
 }
 
+int _waitch( void )
+{
+    int c ;
+
+    if (((char)(RS232_Status) & (char)(0x01)) != (char)(0x01)) {
+      return 1;
+    }
+
+    c = (RS232_RxData & (char)(0x7f));                   // read received character, mask off top bit and return as 7 bit ASCII character
+
+    // shall we echo the character? Echo is set to TRUE at reset, but for speed we don't want to echo when downloading code with the 'L' debugger command
+    if(Echo)
+        _putch(c);
+
+    return c ;
+}
+
 // flush the input stream for any unread characters
 
 void FlushKeyboard(void)
@@ -193,8 +210,10 @@ void menu(void)
 
 
         if ( c == (char)('T'))  {
-               printf("\nRunning Cosmic Impalas Game\n");
-		       cosmic_impalas_main();
+          printf("\nRunning Cosmic Impalas Game\n");
+          Echo = 0; // turn off echoing of characters to speed up game
+          cosmic_impalas_main();
+          Echo = 1; // turn echoing back on
 			   continue;
 		} 
 		

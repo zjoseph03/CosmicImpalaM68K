@@ -58,6 +58,9 @@
 ; byte* enemy_bitmaps[4];
 ; unsigned long seed; 
 ; extern int clock_count_ms;
+; // Some Function Prototypes
+; int _getch(void);
+; void FlushKeyboard(void);
 ; ///////////////////////////////////////////////////////////////////////////
 ; //
 ; // Functions to Implement
@@ -68,43 +71,344 @@
        section   code
        xdef      _draw_sprite
 _draw_sprite:
-       link      A6,#0
+       link      A6,#-4
+       movem.l   D2/D3/D4,-(A7)
+       move.l    8(A6),D4
+; byte i;
+; byte j;
+; byte w = *src++;
+       move.l    D4,A0
+       addq.l    #1,D4
+       move.b    (A0),-2(A6)
+; byte h = *src++;
+       move.l    D4,A0
+       addq.l    #1,D4
+       move.b    (A0),-1(A6)
+; for (i=0; i<h; i++) {
+       clr.b     D3
+draw_sprite_1:
+       cmp.b     -1(A6),D3
+       bhs       draw_sprite_3
+; for (j=0; j<w; j++) {
+       clr.b     D2
+draw_sprite_4:
+       cmp.b     -2(A6),D2
+       bhs       draw_sprite_6
+; WRITE_VIDMEM(x+i, y+j, *src);  // Add the offsets to the base position
+       move.l    D4,A0
+       move.l    #16777216,D0
+       move.b    19(A6),D1
+       add.b     D2,D1
+       and.w     #255,D1
+       asl.w     #8,D1
+       ext.l     D1
+       move.l    D0,-(A7)
+       move.b    15(A6),D0
+       add.b     D3,D0
+       and.l     #255,D0
+       add.l     D0,D1
+       move.l    (A7)+,D0
+       add.l     D1,D0
+       move.l    D0,A1
+       move.b    (A0),(A1)
+; src++;
+       addq.l    #1,D4
+       addq.b    #1,D2
+       bra       draw_sprite_4
+draw_sprite_6:
+       addq.b    #1,D3
+       bra       draw_sprite_1
+draw_sprite_3:
+       movem.l   (A7)+,D2/D3/D4
        unlk      A6
        rts
-; //complete this function
 ; }
-; byte xor_sprite(byte *src, byte x, byte y)
-; {
+; }
+; }
+; byte xor_sprite(const byte* src, byte x, byte y) {
        xdef      _xor_sprite
 _xor_sprite:
-       link      A6,#0
+       link      A6,#-4
+       movem.l   D2/D3/D4/D5,-(A7)
+       move.l    8(A6),D4
+; byte i,j;
+; byte result = 0;
+       clr.b     D5
+; byte w = *src++;
+       move.l    D4,A0
+       addq.l    #1,D4
+       move.b    (A0),-2(A6)
+; byte h = *src++;
+       move.l    D4,A0
+       addq.l    #1,D4
+       move.b    (A0),-1(A6)
+; for (i=0; i<h; i++) {
+       clr.b     D3
+xor_sprite_1:
+       cmp.b     -1(A6),D3
+       bhs       xor_sprite_3
+; for (j=0; j<w; j++) {
+       clr.b     D2
+xor_sprite_4:
+       cmp.b     -2(A6),D2
+       bhs       xor_sprite_6
+; result |= (VIDMEM(x+i, y+j) ^= *src++);
+       move.l    #16777216,D0
+       move.b    19(A6),D1
+       add.b     D2,D1
+       and.w     #255,D1
+       asl.w     #8,D1
+       ext.l     D1
+       move.l    D0,-(A7)
+       move.b    15(A6),D0
+       add.b     D3,D0
+       and.l     #255,D0
+       add.l     D0,D1
+       move.l    (A7)+,D0
+       add.l     D1,D0
+       move.l    D0,A0
+       move.l    D4,A1
+       addq.l    #1,D4
+       move.b    (A1),D0
+       eor.b     D0,(A0)
+       move.b    (A0),D0
+       or.b      D0,D5
+       addq.b    #1,D2
+       bra       xor_sprite_4
+xor_sprite_6:
+       addq.b    #1,D3
+       bra       xor_sprite_1
+xor_sprite_3:
+; }
+; }
+; return result;
+       move.b    D5,D0
+       movem.l   (A7)+,D2/D3/D4/D5
        unlk      A6
        rts
-; //complete this function
 ; }
-; void erase_sprite(byte *src, byte x, byte y)
-; {
+; void erase_sprite(const byte* src, byte x, byte y) {
        xdef      _erase_sprite
 _erase_sprite:
-       link      A6,#0
+       link      A6,#-4
+       movem.l   D2/D3/D4,-(A7)
+       move.l    8(A6),D4
+; byte i,j;
+; byte w = *src++;
+       move.l    D4,A0
+       addq.l    #1,D4
+       move.b    (A0),-2(A6)
+; byte h = *src++;
+       move.l    D4,A0
+       addq.l    #1,D4
+       move.b    (A0),-1(A6)
+; for (i=0; i<h; i++) {
+       clr.b     D3
+erase_sprite_1:
+       cmp.b     -1(A6),D3
+       bhs       erase_sprite_3
+; for (j=0; j<w; j++) {
+       clr.b     D2
+erase_sprite_4:
+       cmp.b     -2(A6),D2
+       bhs       erase_sprite_6
+; VIDMEM(x+i, y+j) &= ~(*src++);
+       move.l    #16777216,D0
+       move.b    19(A6),D1
+       add.b     D2,D1
+       and.w     #255,D1
+       asl.w     #8,D1
+       ext.l     D1
+       move.l    D0,-(A7)
+       move.b    15(A6),D0
+       add.b     D3,D0
+       and.l     #255,D0
+       add.l     D0,D1
+       move.l    (A7)+,D0
+       add.l     D1,D0
+       move.l    D0,A0
+       move.l    D4,A1
+       addq.l    #1,D4
+       move.b    (A1),D0
+       not.b     D0
+       and.b     D0,(A0)
+       addq.b    #1,D2
+       bra       erase_sprite_4
+erase_sprite_6:
+       addq.b    #1,D3
+       bra       erase_sprite_1
+erase_sprite_3:
+       movem.l   (A7)+,D2/D3/D4
        unlk      A6
        rts
-; //complete this function
+; }
+; }
 ; }
 ; void clear_sprite(byte *src, byte x, byte y)
 ; {
        xdef      _clear_sprite
 _clear_sprite:
-       link      A6,#0
+       link      A6,#-4
+       movem.l   D2/D3,-(A7)
+; byte i;
+; byte j;
+; byte w = *src++;
+       move.l    8(A6),A0
+       addq.l    #1,8(A6)
+       move.b    (A0),-2(A6)
+; byte h = *src++;
+       move.l    8(A6),A0
+       addq.l    #1,8(A6)
+       move.b    (A0),-1(A6)
+; for (i=0; i<h; i++) {
+       clr.b     D3
+clear_sprite_1:
+       cmp.b     -1(A6),D3
+       bhs       clear_sprite_3
+; for (j=0; j<w; j++) {
+       clr.b     D2
+clear_sprite_4:
+       cmp.b     -2(A6),D2
+       bhs       clear_sprite_6
+; WRITE_VIDMEM(x+i, y+j, 0);  // Add the offsets to the base position
+       move.l    #16777216,D0
+       move.b    19(A6),D1
+       add.b     D2,D1
+       and.w     #255,D1
+       asl.w     #8,D1
+       ext.l     D1
+       move.l    D0,-(A7)
+       move.b    15(A6),D0
+       add.b     D3,D0
+       and.l     #255,D0
+       add.l     D0,D1
+       move.l    (A7)+,D0
+       add.l     D1,D0
+       move.l    D0,A0
+       clr.b     (A0)
+       addq.b    #1,D2
+       bra       clear_sprite_4
+clear_sprite_6:
+       addq.b    #1,D3
+       bra       clear_sprite_1
+clear_sprite_3:
+       movem.l   (A7)+,D2/D3
        unlk      A6
        rts
-; //complete this function
+; }
+; }
 ; }
 ; void move_player() {
        xdef      _move_player
 _move_player:
-       rts
 ; //complete this function
+; // Clear sprite
+; if (attract) return;
+       tst.b     _attract.L
+       beq.s     move_player_1
+       bra       move_player_3
+move_player_1:
+; check_for_keypress();
+       jsr       _check_for_keypress
+; clear_sprite(player_bitmap, player_x, 1);
+       pea       1
+       move.b    _player_x.L,D1
+       and.l     #255,D1
+       move.l    D1,-(A7)
+       pea       _player_bitmap.L
+       jsr       _clear_sprite
+       add.w     #12,A7
+; if (LEFT1) {
+       tst.l     _LEFT1.L
+       beq.s     move_player_4
+; if (player_x > 0) player_x--;
+       move.b    _player_x.L,D0
+       cmp.b     #0,D0
+       bls.s     move_player_6
+       subq.b    #1,_player_x.L
+move_player_6:
+; LEFT1 = 0;
+       clr.l     _LEFT1.L
+       bra.s     move_player_12
+move_player_4:
+; } else if (RIGHT1) {
+       tst.l     _RIGHT1.L
+       beq.s     move_player_8
+; if (player_x < VIDMEM_DIM1-26) player_x++;
+       move.b    _player_x.L,D0
+       and.w     #255,D0
+       cmp.w     #198,D0
+       bhs.s     move_player_10
+       addq.b    #1,_player_x.L
+move_player_10:
+; RIGHT1 = 0;
+       clr.l     _RIGHT1.L
+       bra.s     move_player_12
+move_player_8:
+; } else if (FIRE1 && bullet_y == 0) {
+       tst.l     _FIRE1.L
+       beq.s     move_player_12
+       move.b    _bullet_y.L,D0
+       bne.s     move_player_12
+; fire_bullet();
+       jsr       _fire_bullet
+; FIRE1 = 0;
+       clr.l     _FIRE1.L
+move_player_12:
+; }
+; // logic for moving player
+; // draw player
+; draw_sprite(player_bitmap, player_x, 1);
+       pea       1
+       move.b    _player_x.L,D1
+       and.l     #255,D1
+       move.l    D1,-(A7)
+       pea       _player_bitmap.L
+       jsr       _draw_sprite
+       add.w     #12,A7
+move_player_3:
+       rts
+; }
+; void check_for_keypress() {
+       xdef      _check_for_keypress
+_check_for_keypress:
+       move.l    D2,-(A7)
+; //complete this function
+; char c;
+; //check for keypresses and set the appropriate flags
+; //FIRE1, LEFT1, RIGHT1
+; c = toupper(_waitch());
+       move.l    D0,-(A7)
+       jsr       __waitch
+       move.l    D0,D1
+       move.l    (A7)+,D0
+       move.l    D1,-(A7)
+       jsr       _toupper
+       addq.w    #4,A7
+       move.b    D0,D2
+; if ( c == (char)('A'))  {
+       cmp.b     #65,D2
+       bne.s     check_for_keypress_1
+; LEFT1 = 1;
+       move.l    #1,_LEFT1.L
+       bra.s     check_for_keypress_5
+check_for_keypress_1:
+; } else if ( c == (char)('D')) {
+       cmp.b     #68,D2
+       bne.s     check_for_keypress_3
+; RIGHT1 = 1;
+       move.l    #1,_RIGHT1.L
+       bra.s     check_for_keypress_5
+check_for_keypress_3:
+; } else if ( c == (char)(' ')) {
+       cmp.b     #32,D2
+       bne.s     check_for_keypress_5
+; FIRE1 = 1;
+       move.l    #1,_FIRE1.L
+check_for_keypress_5:
+       move.l    (A7)+,D2
+       rts
+; }
 ; }
 ; ///////////////////////////////////////////////////////////////////////////
 ; //
@@ -2862,3 +3166,5 @@ _frame:
        xref      _memmove
        xref      _clock_count_ms
        xref      LMUL
+       xref      _toupper
+       xref      __waitch

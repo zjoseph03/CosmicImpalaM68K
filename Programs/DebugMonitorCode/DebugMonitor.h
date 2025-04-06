@@ -154,7 +154,6 @@ void WriteSPIFlashData(int FlashAddress, unsigned char *MemoryAddress, int size)
 void EraseSPIFlashChip(void);
 void EraseSPIFlashSector(int SectorNumber) ;
 
-
 // other prototypes
 void Init_RS232(void) ;
 int kbhit(void) ;
@@ -168,6 +167,8 @@ void LoadFromFlashChip(void);
 void DumpRegisters(void) ;
 void DumpRegistersandPause(void) ;
 void ChangeRegisters(void);
+int _waitch(void) ;
+void FlushKeyboard(void) ;
 
 void Out1Hex(int c) ;
 void Out2Hex(int c) ;

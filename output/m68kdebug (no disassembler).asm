@@ -147,6 +147,42 @@ _getch_4:
        move.l    (A7)+,D2
        rts
 ; }
+; int _waitch( void )
+; {
+       xdef      __waitch
+__waitch:
+       move.l    D2,-(A7)
+; int c ;
+; if (((char)(RS232_Status) & (char)(0x01)) != (char)(0x01)) {
+       move.b    4194368,D0
+       and.b     #1,D0
+       cmp.b     #1,D0
+       beq.s     _waitch_1
+; return 1;
+       moveq     #1,D0
+       bra.s     _waitch_3
+_waitch_1:
+; }
+; c = (RS232_RxData & (char)(0x7f));                   // read received character, mask off top bit and return as 7 bit ASCII character
+       move.b    4194370,D0
+       and.l     #255,D0
+       and.l     #127,D0
+       move.l    D0,D2
+; // shall we echo the character? Echo is set to TRUE at reset, but for speed we don't want to echo when downloading code with the 'L' debugger command
+; if(Echo)
+       tst.l     _Echo.L
+       beq.s     _waitch_4
+; _putch(c);
+       move.l    D2,-(A7)
+       jsr       __putch
+       addq.w    #4,A7
+_waitch_4:
+; return c ;
+       move.l    D2,D0
+_waitch_3:
+       move.l    (A7)+,D2
+       rts
+; }
 ; // flush the input stream for any unread characters
 ; void FlushKeyboard(void)
 ; {
@@ -411,8 +447,12 @@ menu_1:
        pea       @m68kde~1_8.L
        jsr       (A2)
        addq.w    #4,A7
+; Echo = 0; // turn off echoing of characters to speed up game
+       clr.l     _Echo.L
 ; cosmic_impalas_main();
        jsr       _cosmic_impalas_main
+; Echo = 1; // turn echoing back on
+       move.l    #1,_Echo.L
 ; continue;
        bra.s     menu_2
 menu_4:

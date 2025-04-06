@@ -76,6 +76,10 @@ byte* enemy_bitmaps[4];
 unsigned long seed; 
  
 extern int clock_count_ms;
+
+// Some Function Prototypes
+int _getch(void);
+void FlushKeyboard(void);
  
  
 ///////////////////////////////////////////////////////////////////////////
@@ -85,26 +89,98 @@ extern int clock_count_ms;
 ///////////////////////////////////////////////////////////////////////////
 void draw_sprite(byte* src, byte x, byte y)
 {
- //complete this function
+  byte i;
+  byte j;
+  byte w = *src++;
+  byte h = *src++;
+  
+  for (i=0; i<h; i++) {
+    for (j=0; j<w; j++) {
+      WRITE_VIDMEM(x+i, y+j, *src);  // Add the offsets to the base position
+      src++;
+    }
+  }
 }
 
-byte xor_sprite(byte *src, byte x, byte y)
-{
-//complete this function
+byte xor_sprite(const byte* src, byte x, byte y) {
+  byte i,j;
+  byte result = 0;
+  byte w = *src++;
+  byte h = *src++;
+
+  for (i=0; i<h; i++) {
+    for (j=0; j<w; j++) {
+      result |= (VIDMEM(x+i, y+j) ^= *src++);
+    }
+  }
+  return result;
 }
 
-void erase_sprite(byte *src, byte x, byte y)
-{
-  //complete this function
+void erase_sprite(const byte* src, byte x, byte y) {
+  byte i,j;
+  byte w = *src++;
+  byte h = *src++;
+  for (i=0; i<h; i++) {
+    for (j=0; j<w; j++) {
+      VIDMEM(x+i, y+j) &= ~(*src++);
+    }
+  }
 }
 
 void clear_sprite(byte *src, byte x, byte y)
 {
- //complete this function
+  byte i;
+  byte j;
+  byte w = *src++;
+  byte h = *src++;
+  
+  for (i=0; i<h; i++) {
+    for (j=0; j<w; j++) {
+      WRITE_VIDMEM(x+i, y+j, 0);  // Add the offsets to the base position
+    }
+  }
 }
 
 void move_player() {
 //complete this function
+  // Clear sprite
+  if (attract) return;
+  
+  check_for_keypress();
+  clear_sprite(player_bitmap, player_x, 1);
+  if (LEFT1) {
+    if (player_x > 0) player_x--;
+    LEFT1 = 0;
+  } else if (RIGHT1) {
+    if (player_x < VIDMEM_DIM1-26) player_x++;
+    RIGHT1 = 0;
+  } else if (FIRE1 && bullet_y == 0) {
+    fire_bullet();
+    FIRE1 = 0;
+  }
+  
+  // logic for moving player
+  
+
+  // draw player
+  draw_sprite(player_bitmap, player_x, 1);
+}
+
+void check_for_keypress() {
+  //complete this function
+  char c;
+  //check for keypresses and set the appropriate flags
+  //FIRE1, LEFT1, RIGHT1
+
+  c = toupper(_waitch());
+
+  if ( c == (char)('A'))  {
+    LEFT1 = 1;
+  } else if ( c == (char)('D')) {
+    RIGHT1 = 1;
+  } else if ( c == (char)(' ')) {
+    FIRE1 = 1;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -126,6 +202,7 @@ unsigned long long_rand(void) {
     seed ^= seed << 5;
     return seed;
 }
+
 
 int clock() {
    return clock_count_ms;
