@@ -1,4 +1,4 @@
-module buffer_system(
+module BufferSystem(
       input wire clk_clk,
     input wire reset_reset_n,
     
@@ -27,7 +27,7 @@ module buffer_system(
     input wire [7:0] shadow_buffer_writedata
 );
 
-    pixel_buffer_memory PixelBuffer (
+    PixelBuffer PixelBuffer_inst (
         .clock(clk_clk),
         .address_a(onchip_memory_m68k_connection_address),
         .data_a(onchip_memory_m68k_connection_writedata),
@@ -41,7 +41,7 @@ module buffer_system(
         .q_b(onchip_memory_pixel_buffer_connection_readdata)
     );
 
-      shadow_buffer_memory ShadowBuffer (
+      ShadowBuffer ShadowBuffer_inst (
         .clock(clk_clk),
         .address(onchip_memory_m68k_connection_address),
         .data(onchip_memory_m68k_connection_writedata),
