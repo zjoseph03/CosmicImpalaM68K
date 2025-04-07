@@ -506,8 +506,18 @@ BufferSystem  buffer_system_inst (
 
 
 // THIS IS THE ENCRYPTED MEMORY ADAPTER
-midway8080_memory_adapter
-midway8080_memory_adapter_inst
+// midway8080_memory_adapter
+// midway8080_memory_adapter_inst
+// (
+// .input_x_address(video_pixel_buffer_dma_0_avalon_pixel_dma_master_address[INPUT_X_NUM_ADDRESS_BITS+1:2]),
+// .input_y_address(video_pixel_buffer_dma_0_avalon_pixel_dma_master_address[INPUT_X_NUM_ADDRESS_BITS+INPUT_Y_NUM_ADDRESS_BITS+1:INPUT_X_NUM_ADDRESS_BITS+2]),
+// .output_x_address(onchip_memory_pixel_buffer_connection_address[OUTPUT_X_NUM_ADDRESS_BITS-1:0]),
+// .output_y_address(onchip_memory_pixel_buffer_connection_address[OUTPUT_Y_NUM_ADDRESS_BITS+OUTPUT_X_NUM_ADDRESS_BITS-1:OUTPUT_X_NUM_ADDRESS_BITS]),
+// .raw_data_from_midway8080_memory(raw_onchip_memory_pixel_buffer_connection_readdata),
+// .rgb_data_out(video_pixel_buffer_dma_0_avalon_pixel_dma_master_readdata)
+// );
+
+Midway8080MemoryAdapter midway8080_memory_adapter_inst
 (
 .input_x_address(video_pixel_buffer_dma_0_avalon_pixel_dma_master_address[INPUT_X_NUM_ADDRESS_BITS+1:2]),
 .input_y_address(video_pixel_buffer_dma_0_avalon_pixel_dma_master_address[INPUT_X_NUM_ADDRESS_BITS+INPUT_Y_NUM_ADDRESS_BITS+1:INPUT_X_NUM_ADDRESS_BITS+2]),

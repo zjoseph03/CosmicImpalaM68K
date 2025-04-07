@@ -471,6 +471,7 @@ set_global_assignment -name VERILOG_MACRO "SOFTWARE_IS_QUARTUS=<None>"
 set_global_assignment -name VERILOG_MACRO "USE_ALTERA=<None>"
 set_global_assignment -name VERILOG_MACRO "UART_REGISTER_FILES_USE_SYNCRONOUS_RESET=<None>"
 set_global_assignment -name SEARCH_PATH .
+set_global_assignment -name VERILOG_FILE midway_memory_adapter.v
 set_global_assignment -name VERILOG_FILE buffer_system.v
 set_global_assignment -name QXP_FILE midway8080_memory_adapter_encrypted.qxp
 set_global_assignment -name QXP_FILE M68kDramController.qxp
