@@ -489,21 +489,6 @@ BufferSystem  buffer_system_inst (
 // Timer1Data: 0x00400032
 // Timer1Control: 0x00400030
 
-// wire [23:0] Timer1Data;
-// wire [1:0] Timer1Control;
-// wire Timer1Status;
-// wire Timer1IRQ;
-
-// Timer1 timer1_inst (
-//     .clk(Clock25Mhz),
-//     .reset_n(Reset_L),
-//     .timer_data(Timer1Data),
-//     .control(Timer1Control),
-//     .current_count(), // Optional: Connect to monitor the countdown value
-//     .status(Timer1Status),
-//     .irq(Timer1IRQ)
-// );
-
 
 // THIS IS THE ENCRYPTED MEMORY ADAPTER
 // midway8080_memory_adapter
