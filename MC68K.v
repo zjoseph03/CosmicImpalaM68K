@@ -307,7 +307,7 @@ InterruptPriorityEncoder	b2v_inst28(
 	.IRQ4_L(1),
 	.IRQ3_L(1),
 	.IRQ2_L(1),
-	.IRQ1_L(1),
+	.IRQ1_L(Timer1_IRQ),
 	.IPL(IPL));
 
 

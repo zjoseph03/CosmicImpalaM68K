@@ -447,12 +447,8 @@ menu_1:
        pea       @m68kde~1_8.L
        jsr       (A2)
        addq.w    #4,A7
-; Echo = 0; // turn off echoing of characters to speed up game
-       clr.l     _Echo.L
 ; cosmic_impalas_main();
        jsr       _cosmic_impalas_main
-; Echo = 1; // turn echoing back on
-       move.l    #1,_Echo.L
 ; continue;
        bra.s     menu_2
 menu_4:
@@ -674,7 +670,7 @@ _Spurious:
 ; {
        xdef      _Timer_ISR
 _Timer_ISR:
-; if(Timer1Status == 1) {       // Did Timer 1 produce the Interrupt?
+; if(Timer1Status == 1) {       // Did Timer 1 produce the Interrupt?f
        move.b    4194354,D0
        cmp.b     #1,D0
        bne.s     Timer_ISR_1
@@ -725,7 +721,7 @@ _main:
 ; char *CopyrightMessage = "Copyright (C) PJ Davies 2016";
        lea       @m68kde~1_26.L,A0
        move.l    A0,-8(A6)
-; char *nameAndStudentNumber = "Yair Linn";
+; char *nameAndStudentNumber = "Zachariah Joseph: 45500055";
        lea       @m68kde~1_27.L,A0
        move.l    A0,-4(A6)
 ; clock_count_ms = 0;
@@ -926,7 +922,8 @@ _main:
        dc.b      41,32,80,74,32,68,97,118,105,101,115,32,50,48
        dc.b      49,54,0
 @m68kde~1_27:
-       dc.b      89,97,105,114,32,76,105,110,110,0
+       dc.b      90,97,99,104,97,114,105,97,104,32,74,111,115
+       dc.b      101,112,104,58,32,52,53,53,48,48,48,53,53,0
 @m68kde~1_28:
        dc.b      13,10,37,115,0
 @m68kde~1_29:

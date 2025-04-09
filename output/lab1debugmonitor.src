@@ -466,7 +466,7 @@ _go
                 rte                    load the status reg and PC from the stack and commence running
                                        *used to be rte but this didn't load the status byte
 
-; C:\M68KV6.0 - 800BY480\PROGRAMS\DEBUGMONITORCODE\CANBUS CONTROLLER ROUTINES - FOR STUDENTS.C - Compiled by CC68K  Version 5.00 (c) 1991-2005  Peter J. Fondse
+; C:\M68KV6.0 - 800BY480\PROGRAMS\DEBUGMONITORCODE\CANBUS_CONTROLLER.C - Compiled by CC68K  Version 5.00 (c) 1991-2005  Peter J. Fondse
 ; /*********************************************************************************************
 ; ** These addresses and definitions were taken from Appendix 7 of the Can Controller
 ; ** application note and adapted for the 68k assignment
@@ -709,37 +709,267 @@ _go
 ; **  T1 	T2 	BTQ 	SP% 	SJW 	BIT RATE 	ERR% 	BTR0 	BTR1
 ; **  17	8	25	    68	     1	      100	    0	      04	7f
 ; */
+; /*
+; Can Transceiver - controls logic level signals from can controller to physical ones
+; Can Controller - controls the logic level signals from the microcontroller to the transceive
+; Enters sleep mode:
+; - no bus activity
+; - no interrupt pending
+; */
 ; // initialisation for Can controller 0
 ; void Init_CanBus_Controller0(void)
 ; {
 _Init_CanBus_Controller0:
-       rts
 ; // TODO - put your Canbus initialisation code for CanController 0 here
 ; // See section 4.2.1 in the application note for details (PELICAN MODE)
+; // This should just be the configuration of the registers of the SJA1000 controller
+; // It is assumed that after power-on, the CAN controller gets a reset pulse at pin 17
+; // Before setting up registers, we should check the reset/request mode flag before writing anything
+; // Init Process:
+; // Configure clock divider for PeliCAN, clk_out disabled
+; // internal comperator should be bypassed (I THINK)
+; // TX1 Output Config should be set to 0 since we're sending TX message from controller to transeiver 
+; // Configure acceptance code and mask registers
+; // COnfigure bus timing registers
+; // Configure output control register
+; // Enter operating mode
+; // Poll to check if we exited reset mode AKA in normal mode, 
+; //        if not go back to before entering operating mode
+; // Enable can interrupts if used (not sure tbh)
+; // INTERRUPT do later
+; /* disable interrupts, if used (not necessary after power-on) */
+; //EA = DISABLE; /* disable all interrupts */
+; //SJAIntEn = DISABLE; /* disable external interrupt from SJA1000 */
+; while((Can0_ModeControlReg & RM_RR_Bit ) == ClrByte)
+Init_CanBus_Controller0_1:
+       move.b    5242880,D0
+       and.b     #1,D0
+       bne.s     Init_CanBus_Controller0_3
+; {
+; /* other bits than the reset mode/request bit are unchanged */
+; Can0_ModeControlReg = Can0_ModeControlReg | RM_RR_Bit ;
+       move.b    5242880,D0
+       or.b      #1,D0
+       move.b    D0,5242880
+       bra       Init_CanBus_Controller0_1
+Init_CanBus_Controller0_3:
+; }
+; Can0_ClockDivideReg = CANMode_Bit | CBP_Bit | DivBy2;
+       move.b    #192,5242942
+; Can0_InterruptEnReg = ClrIntEnSJA; // disable all interrupts
+       clr.b     5242888
+; Can0_AcceptCode0Reg = ClrByte; // clear acceptance code registers
+       clr.b     5242912
+; Can0_AcceptCode1Reg = ClrByte;
+       clr.b     5242914
+; Can0_AcceptCode2Reg = ClrByte;
+       clr.b     5242916
+; Can0_AcceptCode3Reg = ClrByte;
+       clr.b     5242918
+; Can0_AcceptMask0Reg = ClrByte; // clear acceptance mask registers
+       clr.b     5242920
+; Can0_AcceptMask1Reg = ClrByte;
+       clr.b     5242922
+; Can0_AcceptMask2Reg = ClrByte;
+       clr.b     5242924
+; Can0_AcceptMask3Reg = ClrByte;
+       clr.b     5242926
+; //25
+; Can0_BusTiming0Reg = 0x04;
+       move.b    #4,5242892
+; Can0_BusTiming1Reg = 0x7f;
+       move.b    #127,5242894
+; //45
+; Can0_BusTiming0Reg = 0x08;
+       move.b    #8,5242892
+; Can0_BusTiming1Reg = 0x7f;
+       move.b    #127,5242894
+; Can0_OutControlReg = Tx1Float | Tx0PshPull | NormalMode;
+       move.b    #26,5242896
+; do {
+Init_CanBus_Controller0_4:
+; Can0_ModeControlReg = ClrByte;
+       clr.b     5242880
+       move.b    5242880,D0
+       and.b     #1,D0
+       bne       Init_CanBus_Controller0_4
+       rts
+; } while ((Can0_ModeControlReg & RM_RR_Bit) != ClrByte); // wait until reset mode bit is cleared
+; // INTERRUPT do later
+; //SJAIntEn = ENABLE; /* enable external interrupt from SJA1000 */
+; //EA = ENABLE; /* enable all interrupts
 ; }
 ; // initialisation for Can controller 1
 ; void Init_CanBus_Controller1(void)
 ; {
 _Init_CanBus_Controller1:
-       rts
 ; // TODO - put your Canbus initialisation code for CanController 1 here
 ; // See section 4.2.1 in the application note for details (PELICAN MODE)
+; // INTERRUPT do later
+; /* disable interrupts, if used (not necessary after power-on) */
+; //EA = DISABLE; /* disable all interrupts */
+; //SJAIntEn = DISABLE; /* disable external interrupt from SJA1000 */
+; while((Can1_ModeControlReg & RM_RR_Bit ) == ClrByte)
+Init_CanBus_Controller1_1:
+       move.b    5243392,D0
+       and.b     #1,D0
+       bne.s     Init_CanBus_Controller1_3
+; {
+; /* other bits than the reset mode/request bit are unchanged */
+; Can1_ModeControlReg = Can1_ModeControlReg | RM_RR_Bit ;
+       move.b    5243392,D0
+       or.b      #1,D0
+       move.b    D0,5243392
+       bra       Init_CanBus_Controller1_1
+Init_CanBus_Controller1_3:
 ; }
+; Can1_ClockDivideReg = CANMode_Bit | CBP_Bit | DivBy2;
+       move.b    #192,5243454
+; Can1_InterruptEnReg = ClrIntEnSJA; // disable all interrupts
+       clr.b     5243400
+; Can1_AcceptCode0Reg = ClrByte; // clear acceptance code registers
+       clr.b     5243424
+; Can1_AcceptCode1Reg = ClrByte;
+       clr.b     5243426
+; Can1_AcceptCode2Reg = ClrByte;
+       clr.b     5243428
+; Can1_AcceptCode3Reg = ClrByte;
+       clr.b     5243430
+; Can1_AcceptMask0Reg = ClrByte; // clear acceptance mask registers
+       clr.b     5243432
+; Can1_AcceptMask1Reg = ClrByte;
+       clr.b     5243434
+; Can1_AcceptMask2Reg = ClrByte;
+       clr.b     5243436
+; Can1_AcceptMask3Reg = ClrByte;
+       clr.b     5243438
+; //25
+; Can1_BusTiming0Reg = 0x04;
+       move.b    #4,5243404
+; Can1_BusTiming1Reg = 0x7f;
+       move.b    #127,5243406
+; //45
+; Can1_BusTiming0Reg = 0x08;
+       move.b    #8,5243404
+; Can1_BusTiming1Reg = 0x7f;
+       move.b    #127,5243406
+; Can1_OutControlReg = Tx1Float | Tx0PshPull | NormalMode;
+       move.b    #26,5243408
+; do {
+Init_CanBus_Controller1_4:
+; Can1_ModeControlReg = ClrByte;
+       clr.b     5243392
+       move.b    5243392,D0
+       and.b     #1,D0
+       bne       Init_CanBus_Controller1_4
+       rts
+; } while ((Can1_ModeControlReg & RM_RR_Bit) != ClrByte); // wait until reset mode bit is cleared
+; // INTERRUPT do later
+; //SJAIntEn = ENABLE; /* enable external interrupt from SJA1000 */
+; //EA = ENABLE; /* enable all interrupts
+; }
+; /*
+; Has to transmit into transfer buffer and set Transmit Request flag in cmd register
+; request: transmit a message
+; is transmit buffer released?
+; if yes:
+; write into transmit buffer
+; set transmit request bit (TR) in command register
+; if no: 
+; poll status register until transmit buffer is released
+; temporary storage of message to be transmitted
+; set flag "further message"
+; When transmitting, transmit buffer is locked
+; */
 ; // Transmit for sending a message via Can controller 0
 ; void CanBus0_Transmit(void)
 ; {
 _CanBus0_Transmit:
-       rts
 ; // TODO - put your Canbus transmit code for CanController 0 here
 ; // See section 4.2.2 in the application note for details (PELICAN MODE)
+; do
+; {
+CanBus0_Transmit_1:
+; /* start a polling timer and run some tasks while waiting
+; break the loop and signal an error if time too long */
+; } while((Can0_StatusReg & TBS_Bit ) != TBS_Bit );
+       move.b    5242884,D0
+       and.b     #4,D0
+       cmp.b     #4,D0
+       bne       CanBus0_Transmit_1
+; /* Transmit Buffer is released, a message may be written into the buffer */
+; /* in this example a Standard Frame message shall be transmitted */
+; Can0_TxFrameInfo = 0x08; /* SFF (data), DLC=8 */
+       move.b    #8,5242912
+; Can0_TxBuffer1 = 0xA5; /* ID1 = A5, (1010 0101) */
+       move.b    #165,5242914
+; Can0_TxBuffer2 = 0x20; /* ID2 = 20, (0010 0000) */
+       move.b    #32,5242916
+; Can0_TxBuffer3 = 0x51; /* data1 = 51 */
+       move.b    #81,5242918
+; Can0_TxBuffer4 = 0x52; /* data2 = 52 */
+       move.b    #82,5242920
+; Can0_TxBuffer5 = 0x53; /* data3 = 53 */
+       move.b    #83,5242922
+; Can0_TxBuffer6 = 0x54; /* data4 = 54 */
+       move.b    #84,5242924
+; Can0_TxBuffer7 = 0x55; /* data5 = 55 */
+       move.b    #85,5242926
+; Can0_TxBuffer8 = 0x56; /* data6 = 56 */
+       move.b    #86,5242928
+; Can0_TxBuffer9 = 0x57; /* data7 = 57 */
+       move.b    #87,5242930
+; Can0_TxBuffer10 = 0x58; /* data8 = 58 */
+       move.b    #88,5242932
+; /* Start the transmission */
+; Can0_CommandReg = TR_Bit ; /* Set Transmission Request bit */
+       move.b    #1,5242882
+       rts
 ; }
 ; // Transmit for sending a message via Can controller 1
 ; void CanBus1_Transmit(void)
 ; {
 _CanBus1_Transmit:
-       rts
 ; // TODO - put your Canbus transmit code for CanController 1 here
 ; // See section 4.2.2 in the application note for details (PELICAN MODE)
+; do
+; {
+CanBus1_Transmit_1:
+; /* start a polling timer and run some tasks while waiting
+; break the loop and signal an error if time too long */
+; } while((Can1_StatusReg & TBS_Bit) != TBS_Bit);
+       move.b    5243396,D0
+       and.b     #4,D0
+       cmp.b     #4,D0
+       bne       CanBus1_Transmit_1
+; /* Transmit Buffer is released, a message may be written into the buffer */
+; /* in this example a Standard Frame message shall be transmitted */
+; Can1_TxFrameInfo = 0x08; /* SFF (data), DLC=8 */
+       move.b    #8,5243424
+; Can1_TxBuffer1 = 0xA5; /* ID1 = A5, (1010 0101) */
+       move.b    #165,5243426
+; Can1_TxBuffer2 = 0x20; /* ID2 = 20, (0010 0000) */
+       move.b    #32,5243428
+; Can1_TxBuffer3 = 0x51; /* data1 = 51 */
+       move.b    #81,5243430
+; Can1_TxBuffer4 = 0x52; /* data2 = 52 */
+       move.b    #82,5243432
+; Can1_TxBuffer5 = 0x53; /* data3 = 53 */
+       move.b    #83,5243434
+; Can1_TxBuffer6 = 0x54; /* data4 = 54 */
+       move.b    #84,5243436
+; Can1_TxBuffer7 = 0x55; /* data5 = 55 */
+       move.b    #85,5243438
+; Can1_TxBuffer8 = 0x56; /* data6 = 56 */
+       move.b    #86,5243440
+; Can1_TxBuffer9 = 0x57; /* data7 = 57 */
+       move.b    #87,5243442
+; Can1_TxBuffer10 = 0x58; /* data8 = 58 */
+       move.b    #88,5243444
+; /* Start the transmission */
+; Can1_CommandReg = TR_Bit; /* Set Transmission Request bit */
+       move.b    #1,5243394
+       rts
 ; }
 ; // Receive for reading a received message via Can controller 0
 ; void CanBus0_Receive(void)
@@ -3653,6 +3883,7 @@ I2CTest_29:
 ; // Control byte sent after the slave address. COnfigure this properly
 ; // Remaining bits can select input channel mode
 ; // Generate sine wave
+; // WRITE THIS FUNCTION FR FR
 ; void ADCRead() {
 _ADCRead:
        link      A6,#-4

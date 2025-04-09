@@ -211,9 +211,7 @@ void menu(void)
 
         if ( c == (char)('T'))  {
           printf("\nRunning Cosmic Impalas Game\n");
-          Echo = 0; // turn off echoing of characters to speed up game
           cosmic_impalas_main();
-          Echo = 1; // turn echoing back on
 			   continue;
 		} 
 		
@@ -313,7 +311,7 @@ void Spurious() {
 **********************************************************************************/
 void Timer_ISR(void)
 {
-   	if(Timer1Status == 1) {       // Did Timer 1 produce the Interrupt?
+   	if(Timer1Status == 1) {       // Did Timer 1 produce the Interrupt?f
 		clock_count_ms = clock_count_ms + 10; //100 HZ clock = 10ms per clock tick
 		//printf("in timer isr, clock_count_ms = %d\n",clock_count_ms);
    	    Timer1Control = 3;      	// if so clear interrupt and restart timer
@@ -348,7 +346,7 @@ void main(void)
 
 	char *BugMessage = "DE1-68k 15/11/2024 14:44";
     char *CopyrightMessage = "Copyright (C) PJ Davies 2016";
-    char *nameAndStudentNumber = "Yair Linn";
+    char *nameAndStudentNumber = "Zachariah Joseph: 45500055";
 
 	clock_count_ms = 0;
 	Init_RS232() ;     // initialise the RS232 port
